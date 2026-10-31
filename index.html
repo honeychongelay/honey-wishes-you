@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Birthday Adventure Arcade</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Press Start 2P & Noto Serif Myanmar / Padauk -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Myanmar:wght@400;500;600;700&family=Padauk:wght@400;700&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body {
+      background: #5c94fc; /* Classic 8-bit Mario Sky Blue */
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+    .pixel-font {
+      font-family: 'Press Start 2P', monospace;
+      letter-spacing: 0.5px;
+    }
+    .burmese-font {
+      font-family: 'Noto Serif Myanmar', 'Padauk', serif;
+      line-height: 2.1;
+      letter-spacing: 0.2px;
+      text-rendering: optimizeLegibility;
+    }
+
+    /* 8-bit Arcade Box styling */
+    .arcade-box {
+      background: #181829;
+      border: 4px solid #facc15;
+      box-shadow: 
+        0 6px 0 0 #000,
+        0 -4px 0 0 #000,
+        -4px 0 0 0 #000,
+        4px 0 0 0 #000,
+        inset 0 0 0 4px #4338ca;
+    }
+
+    /* Premium Arcade Parchment Bezel for Quest Letter */
+    .arcade-cabinet-modal {
+      background: linear-gradient(180deg, #16152b 0%, #0d0c18 100%);
+      border: 6px solid #facc15;
+      box-shadow: 
+        0 0 0 4px #000,
+        0 0 35px rgba(250, 204, 21, 0.45),
+        inset 0 0 0 4px #b45309,
+        inset 0 0 25px rgba(0, 0, 0, 0.85);
+      position: relative;
+    }
+
+    .quest-scroll-inner {
+      background: radial-gradient(circle at 50% 20%, #fffbeb 0%, #fef3c7 65%, #fde68a 100%);
+      border: 4px solid #78350f;
+      box-shadow: 
+        inset 0 0 15px rgba(180, 83, 9, 0.25),
+        0 4px 12px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    .arcade-bracket-tl { top: -6px; left: -6px; }
+    .arcade-bracket-tr { top: -6px; right: -6px; }
+    .arcade-bracket-bl { bottom: -6px; left: -6px; }
+    .arcade-bracket-br { bottom: -6px; right: -6px; }
+
+    /* Chunky Arcade Push Buttons */
+    .arcade-push-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-family: 'Press Start 2P', monospace;
+      font-weight: 700;
+      border: 3px solid #000;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.08s ease;
+      text-transform: uppercase;
+    }
+    .btn-arcade-red {
+      background: linear-gradient(180deg, #f43f5e 0%, #dc2626 70%, #991b1b 100%);
+      color: #fff;
+      box-shadow: 0 6px 0 0 #570d14, 0 10px 15px rgba(220, 38, 38, 0.45);
+      text-shadow: 1px 1px 0 #000;
+    }
+    .btn-arcade-red:hover {
+      background: linear-gradient(180deg, #fb7185 0%, #ef4444 70%, #b91c1c 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 0 #570d14, 0 12px 20px rgba(220, 38, 38, 0.6);
+    }
+    .btn-arcade-red:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 0 #570d14;
+    }
+
+    .btn-arcade-gold {
+      background: linear-gradient(180deg, #fef08a 0%, #eab308 60%, #a16207 100%);
+      color: #3e1f02;
+      box-shadow: 0 6px 0 0 #451a03, 0 10px 20px rgba(234, 179, 8, 0.5);
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+    .btn-arcade-gold:hover {
+      background: linear-gradient(180deg, #fffbeb 0%, #facc15 60%, #ca8a04 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 0 #451a03, 0 12px 25px rgba(234, 179, 8, 0.7);
+    }
+    .btn-arcade-gold:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 0 #451a03;
+    }
+
+    /* Pixel Buttons */
+    .arcade-btn {
+      position: relative;
+      background: #e11d48;
+      color: #fff;
+      border: 3px solid #000;
+      box-shadow: 0 4px 0 0 #881337;
+      transition: all 0.08s ease;
+      cursor: pointer;
+    }
+    .arcade-btn:hover {
+      background: #f43f5e;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 0 #881337;
+    }
+    .arcade-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 0 #881337;
+    }
+    .arcade-btn-green {
+      background: #16a34a;
+      box-shadow: 0 4px 0 0 #14532d;
+    }
+    .arcade-btn-green:hover {
+      background: #22c55e;
+      box-shadow: 0 6px 0 0 #14532d;
+    }
+    .arcade-btn-gold {
+      background: #eab308;
+      color: #0f172a;
+      box-shadow: 0 4px 0 0 #854d0e;
+    }
+    .arcade-btn-gold:hover {
+      background: #facc15;
+      box-shadow: 0 6px 0 0 #854d0e;
+    }
+
+    /* CRT Scanline Overlay */
+    .scanlines {
+      background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.22) 50%
+      ), linear-gradient(
+        90deg,
+        rgba(255, 0, 0, 0.03),
+        rgba(0, 255, 0, 0.01),
+        rgba(0, 0, 255, 0.03)
+      );
+      background-size: 100% 4px, 6px 100%;
+      pointer-events: none;
+    }
+
+    /* Flip Card 3D Setup */
+    .perspective-800 {
+      perspective: 800px;
+    }
+    .card-flipper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.35s ease;
+      transform-style: preserve-3d;
+    }
+    .card-flipper.flipped {
+      transform: rotateY(180deg);
+    }
+    .card-front, .card-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 8px;
+    }
+    .card-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Candle Flame Animation */
+    @keyframes flameFlicker {
+      0%, 100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 8px #f59e0b); }
+      50% { transform: scale(1.18, 0.92) translateY(-2px); filter: drop-shadow(0 0 14px #ef4444); }
+    }
+    .candle-flame {
+      animation: flameFlicker 0.35s infinite alternate;
+      transform-origin: bottom center;
+    }
+
+    /* Brick Ground Pattern */
+    .pixel-ground {
+      background-color: #c2410c;
+      background-image: 
+        linear-gradient(335deg, #9a3412 23px, transparent 23px),
+        linear-gradient(155deg, #7c2d12 23px, transparent 23px),
+        linear-gradient(335deg, #9a3412 23px, transparent 23px),
+        linear-gradient(155deg, #7c2d12 23px, transparent 23px);
+      background-size: 58px 58px;
+      background-position: 0px 2px, 4px 35px, 29px 31px, 34px 6px;
+      border-top: 6px solid #4ade80;
+    }
+
+    /* Toast Notification */
+    #arcadeToast {
+      position: fixed;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #dc2626;
+      border: 3px solid #facc15;
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+      z-index: 9999;
+      display: none;
+      text-align: center;
+      max-width: 90vw;
+    }
+
+    /* Highlight removed as requested */
+    .selected-glow {
+      /* clean look without glowing border pulse */
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-2 sm:p-4 relative text-slate-100 selection:bg-pink-500">
+
+  <!-- Scanlines overlay -->
+  <div class="fixed inset-0 scanlines z-40"></div>
+
+  <!-- Toast Alert -->
+  <div id="arcadeToast"></div>
+
+  <!-- HUD TOP BAR (Mario Arcade Style) -->
+  <header class="w-full max-w-xl flex items-center justify-between px-3 py-2 z-30 mb-2 bg-slate-900/90 border-2 border-yellow-400 rounded-md">
+    <div class="flex items-center gap-2">
+      <div class="pixel-font text-[10px] text-yellow-300">STAGE <span id="hud-stage-num">0</span>/4</div>
+      <div id="hud-hearts" class="flex gap-0.5 text-xs">
+        <span>❤️</span><span>❤️</span><span>❤️</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="pixel-font text-[10px] text-yellow-400">🪙 <span id="hud-coins">00</span></span>
+      <button id="sound-btn" onclick="toggleMute()" class="arcade-btn px-2 py-0.5 text-[9px] pixel-font bg-indigo-700 rounded">
+        🔊 SFX
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN ARCADE SCREEN CONTAINER -->
+  <main class="w-full max-w-xl flex-1 flex flex-col items-center justify-center relative z-20">
+
+    <!-- ================= STAGE 0: WELCOME IMAGE HERO SELECT SCREEN ================= -->
+    <section id="screen-welcome" class="w-full arcade-box p-2 sm:p-3 text-center rounded-lg flex flex-col items-center">
+      
+      <!-- Exact Welcome Image Container with 4:3 Aspect Ratio and Perfectly Aligned Touch Zones -->
+      <div class="relative w-full max-w-lg aspect-[4/3] rounded-lg overflow-hidden border-2 border-slate-900 shadow-2xl bg-sky-400">
+        <!-- Exact Welcome UI Image -->
+        <img 
+          id="welcome-bg-img"
+          src="welcome.jpg" 
+          alt="Birthday Game Arcade Character Select" 
+          class="w-full h-full object-fill block"
+          onerror="this.onerror=null; this.src='Gemini_Generated_Image_g27w55g27w55g27w.jpg';"
+        />
+
+        <!-- Optional custom uploaded avatar overlays if user places girl_avatar.jpg or boy_avatar.jpg -->
+        <div id="girl-custom-avatar" class="absolute pointer-events-none hidden" style="left: 17.5%; top: 32.5%; width: 28%; height: 41%;">
+          <img src="girl_avatar.jpg" alt="Girl Avatar" class="w-full h-full object-cover rounded" onerror="this.parentElement.style.display='none';"/>
+        </div>
+        <div id="boy-custom-avatar" class="absolute pointer-events-none hidden" style="left: 54.5%; top: 32.5%; width: 28%; height: 41%;">
+          <img src="boy_avatar.jpg" alt="Boy Avatar" class="w-full h-full object-cover rounded" onerror="this.parentElement.style.display='none';"/>
+        </div>
+
+        <!-- Touch Hotspot 1: Girl (Player 1) - LOCKED / NO NEED TO CHOOSE -->
+        <div 
+          onclick="handleGirlSelect()" 
+          class="absolute cursor-not-allowed group"
+          style="left: 15.5%; top: 23%; width: 32%; height: 55%;"
+          title="Player 1 (Waiting)">
+          <!-- Locked hotspot for Player 1 -->
+          <div class="w-full h-full border-2 border-transparent rounded flex items-start justify-end p-1 transition">
+          </div>
+        </div>
+
+        <!-- Touch Hotspot 1b: Girl's SELECT button area -->
+        <div 
+          onclick="handleGirlSelect()" 
+          class="absolute cursor-not-allowed hover:bg-red-500/20 rounded-md transition"
+          style="left: 22.5%; top: 80.5%; width: 16.5%; height: 7%;">
+        </div>
+
+        <!-- Touch Hotspot 2: Boy (Player 2) - CLICK TO CHOOSE BOY -->
+        <div 
+          id="boy-card-hotspot"
+          onclick="handleBoySelect()" 
+          class="absolute cursor-pointer"
+          style="left: 53%; top: 23%; width: 32%; height: 55%;"
+          title="Player 2 (Choose Boy)">
+          <!-- Clean Selection Box for Boy (Highlight Removed) -->
+          <div id="boy-glow-border" class="w-full h-full border-2 border-transparent rounded-md flex items-start justify-end p-1 transition">
+          </div>
+        </div>
+
+        <!-- Touch Hotspot 2b: Boy's SELECT button area -->
+        <div 
+          onclick="handleBoySelect()" 
+          class="absolute cursor-pointer hover:bg-yellow-400/30 rounded-md transition"
+          style="left: 61%; top: 80.5%; width: 16.5%; height: 7%;"
+          title="Select Boy">
+          <div id="boy-select-indicator" class="w-full h-full rounded flex items-center justify-center">
+          </div>
+        </div>
+
+        <!-- Touch Hotspot 3: START BUTTON (Directly over the image's START button) -->
+        <div 
+          onclick="startQuest()" 
+          class="absolute cursor-pointer hover:scale-105 active:scale-95 transition flex items-center justify-center rounded-lg"
+          style="left: 40%; top: 87%; width: 20%; height: 10%;"
+          title="Press START">
+          <div class="w-full h-full border-2 border-transparent hover:border-yellow-300 rounded-md flex items-center justify-center">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Hero Selection Status & Chunky Arcade START Button below image for 100% fail-safe click on all phones -->
+      
+
+      <p class="pixel-font text-[8px] text-slate-300 mt-2">
+        TAP "SELECT" OR "START" TO EMBARK ON THE QUEST
+      </p>
+    </section>
+
+    <!-- ================= STAGE 1: 2D PLATFORMER (BOY REACHING GIRL) ================= -->
+    <section id="screen-stage1" class="w-full arcade-box p-3 sm:p-5 rounded-lg flex flex-col items-center hidden">
+      <div class="w-full flex items-center justify-between border-b-2 border-indigo-700 pb-2 mb-2">
+        <div>
+          <span class="pixel-font text-[9px] text-pink-400 block">STAGE 01</span>
+          <h2 class="pixel-font text-xs text-yellow-300">RUN TO HER!</h2>
+        </div>
+        <div class="text-right">
+          <span class="pixel-font text-xs text-yellow-400 block">COINS: <span id="plat-coins">0</span>/3</span>
+          <span class="text-[9px] text-pink-300 pixel-font">REACH PLAYER 1! ❤️</span>
+        </div>
+      </div>
+
+      <!-- Platformer Canvas Container -->
+      <div class="relative w-full aspect-[16/10] max-w-md bg-sky-400 border-4 border-slate-900 rounded overflow-hidden shadow-inner flex flex-col justify-center items-center">
+        <canvas id="platformerCanvas" class="w-full h-full block"></canvas>
+
+        <!-- Stage 1 Cleared Overlay -->
+        <div id="stage1-cleared" class="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-4 z-20 hidden">
+          <span class="text-5xl mb-2 animate-bounce">❤️</span>
+          <h3 class="pixel-font text-sm sm:text-base text-yellow-400 mb-1">STAGE 1 CLEARED!</h3>
+          <p class="text-[10px] text-pink-200 pixel-font mb-4 text-center">TOGETHER AT LAST! ❤️</p>
+          <button onclick="goToStage(2)" class="arcade-btn arcade-btn-gold px-5 py-2.5 text-xs pixel-font rounded">
+            NEXT STAGE ➔
+          </button>
+        </div>
+      </div>
+
+      <!-- Arrow Controls for Mobile & Desktop click -->
+      <div class="flex gap-2 mt-3 w-full max-w-md justify-between items-center px-1">
+        <div class="flex gap-2">
+          <button id="p-btn-left" class="arcade-btn px-4 py-2.5 text-sm font-bold bg-indigo-700">◀</button>
+          <button id="p-btn-right" class="arcade-btn px-4 py-2.5 text-sm font-bold bg-indigo-700">▶</button>
+        </div>
+        <button id="p-btn-jump" class="arcade-btn px-6 py-2.5 text-xs font-bold arcade-btn-gold pixel-font">
+          JUMP ⬆
+        </button>
+      </div>
+      <div class="text-center text-[9px] text-slate-300 pixel-font mt-1">
+        KEYBOARD: ARROWS / WASD / SPACE
+      </div>
+    </section>
+
+    <!-- ================= STAGE 2: MEMORY MATCH (OUR PHOTOS) ================= -->
+    <section id="screen-stage2" class="w-full arcade-box p-3 sm:p-5 rounded-lg flex flex-col items-center hidden">
+      <div class="w-full flex items-center justify-between border-b-2 border-indigo-700 pb-2 mb-3">
+        <div>
+          <span class="pixel-font text-[9px] text-pink-400 block">STAGE 02</span>
+          <h2 class="pixel-font text-xs sm:text-sm text-yellow-300">MEMORY MATCH</h2>
+        </div>
+        <div class="text-right">
+          <span class="pixel-font text-xs text-yellow-400">PAIRS: <span id="match-pairs-count">0</span> / 4</span>
+          <span class="text-[9px] text-slate-300 pixel-font block">FIND MATCHING PAIRS</span>
+        </div>
+      </div>
+
+      <!-- 4x2 Responsive Cards Grid (8 Cards) -->
+      <div id="cards-grid" class="grid grid-cols-4 gap-2 sm:gap-3 w-full max-w-md aspect-[4/2.6] p-1">
+        <!-- Rendered with Couple's real photos by JavaScript -->
+      </div>
+
+      <!-- Stage 2 Cleared Box -->
+      <div id="stage2-cleared" class="w-full mt-3 p-3 bg-indigo-950 border-2 border-yellow-400 rounded text-center hidden">
+        <h3 class="pixel-font text-xs sm:text-sm text-yellow-300 mb-1">🎉 STAGE 2 CLEARED!</h3>
+        <p class="text-[10px] text-pink-200 pixel-font mb-3">ALL MEMORIES MATCHED!</p>
+        <button onclick="showMemeStage()" class="arcade-btn arcade-btn-gold px-5 py-2 text-xs pixel-font rounded">
+          CONTINUE QUEST ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= STAGE 3: DIRECT TOILET MEME MODAL / SCREEN ================= -->
+    <section id="screen-meme" class="w-full arcade-box p-4 sm:p-6 rounded-lg flex flex-col items-center text-center hidden">
+      <div class="inline-block bg-pink-600 text-white px-3 py-1 rounded text-[9px] pixel-font mb-2">
+        ★ SECRET UNLOCKED ★
+      </div>
+      
+      <!-- Cleaned Title without redundant subtext -->
+      <h2 class="text-base sm:text-lg font-bold text-yellow-300 burmese-font leading-snug mb-3">
+        အမြဲတမ်း အီးပါချင်နေတဲ့ သူအတွက် 😂🚽
+      </h2>
+
+      <!-- Meme Image Box using exact file toilet_meme.jpg -->
+      <div class="w-full max-w-xs rounded-lg overflow-hidden border-4 border-yellow-400 shadow-2xl my-2 bg-slate-900 aspect-square flex items-center justify-center">
+        <img 
+          src="toilet_meme.jpg" 
+          alt="Restroom Birthday Cake Meme" 
+          class="w-full h-full object-cover"
+          onerror="this.onerror=null; this.src='https://placehold.co/400x400/1e1b4b/facc15?text=toilet_meme.jpg';"
+        />
+      </div>
+
+      <!-- Action Button leading directly to cake stage -->
+      <div class="w-full max-w-xs mt-3">
+        <button onclick="goToStage(4)" class="arcade-btn arcade-btn-gold px-5 py-2.5 text-xs pixel-font rounded w-full font-bold shadow-lg">
+          BLOW BIRTHDAY CAKE ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= STAGE 4: CAKE BLOW & CONFETTI ================= -->
+    <section id="screen-cake" class="w-full arcade-box p-4 sm:p-6 rounded-lg flex flex-col items-center text-center hidden">
+      <div class="inline-block bg-yellow-400 text-slate-900 px-3 py-0.5 rounded text-[9px] pixel-font mb-2 font-bold">
+        FINAL STAGE
+      </div>
+      <h2 class="pixel-font text-base sm:text-lg text-yellow-300 mb-1">HAPPY BIRTHDAY!</h2>
+      <p class="pixel-font text-[9px] text-pink-300 mb-4">MAKE A WISH & BLOW THE CANDLES</p>
+
+      <!-- Interactive 8-Bit Pixel Birthday Cake -->
+      <div id="cake-interactive-box" onclick="blowCandles()" class="relative cursor-pointer my-2 p-4 bg-indigo-900/60 rounded-xl border-2 border-indigo-700 hover:border-yellow-400 transition transform hover:scale-105 active:scale-95 group">
+        
+        <!-- Glowing Candle Flames -->
+        <div id="candle-flames" class="flex justify-center gap-6 mb-[-6px] relative z-10">
+          <div class="candle-flame text-xl text-yellow-300 drop-shadow">🔥</div>
+          <div class="candle-flame text-xl text-yellow-300 drop-shadow" style="animation-delay: 0.15s">🔥</div>
+          <div class="candle-flame text-xl text-yellow-300 drop-shadow" style="animation-delay: 0.3s">🔥</div>
+        </div>
+
+        <!-- 8-Bit Cake SVG -->
+        <svg class="w-44 h-32 sm:w-52 sm:h-36 mx-auto drop-shadow-xl" viewBox="0 0 160 110">
+          <rect x="48" y="10" width="6" height="22" fill="#f43f5e" stroke="#000" stroke-width="1.5"/>
+          <rect x="77" y="6" width="6" height="26" fill="#3b82f6" stroke="#000" stroke-width="1.5"/>
+          <rect x="106" y="10" width="6" height="22" fill="#10b981" stroke="#000" stroke-width="1.5"/>
+
+          <rect x="30" y="30" width="100" height="26" rx="4" fill="#fb7185" stroke="#000" stroke-width="3"/>
+          <path d="M 32 46 Q 38 56 44 46 Q 50 56 56 46 Q 62 56 68 46 Q 74 56 80 46 Q 86 56 92 46 Q 98 56 104 46 Q 110 56 116 46 Q 122 56 128 46" fill="#fb7185" stroke="#000" stroke-width="2"/>
+          <circle cx="55" cy="38" r="3" fill="#fff"/>
+          <circle cx="80" cy="38" r="3" fill="#fff"/>
+          <circle cx="105" cy="38" r="3" fill="#fff"/>
+
+          <rect x="15" y="56" width="130" height="36" rx="4" fill="#f43f5e" stroke="#000" stroke-width="3"/>
+          <rect x="15" y="70" width="130" height="8" fill="#78350f"/>
+          <rect x="30" y="82" width="6" height="3" fill="#facc15"/>
+          <rect x="60" y="80" width="6" height="3" fill="#38bdf8"/>
+          <rect x="90" y="84" width="6" height="3" fill="#4ade80"/>
+          <rect x="120" y="81" width="6" height="3" fill="#facc15"/>
+
+          <path d="M 5 92 L 155 92 L 140 102 L 20 102 Z" fill="#94a3b8" stroke="#000" stroke-width="3"/>
+        </svg>
+
+        <div id="blow-hint" class="pixel-font text-[9px] text-yellow-300 mt-2 animate-bounce">
+          [ 👆 TAP CAKE TO BLOW ]
+        </div>
+      </div>
+
+      <!-- Birthday Letter Unlock Button -->
+      <div id="letter-unlock-box" class="mt-4 flex flex-col items-center hidden">
+        <div class="text-4xl animate-bounce cursor-pointer p-2" onclick="openLetter()">
+          📜
+        </div>
+        <button onclick="openLetter()" class="arcade-btn arcade-btn-gold px-5 py-2.5 text-xs pixel-font rounded shadow-xl">
+          READ BIRTHDAY LETTER ➔
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= RETRO BIRTHDAY LETTER MODAL ================= -->
+  <div id="letter-modal" class="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-3 sm:p-5 hidden">
+    <div class="arcade-cabinet-modal w-full max-w-xl rounded-2xl p-3 sm:p-5 relative max-h-[92vh] overflow-y-auto">
+      
+      <!-- Arcade Corner Rivets / Brackets -->
+      <div class="absolute arcade-bracket-tl w-5 h-5 bg-yellow-400 border-2 border-black z-20"></div>
+      <div class="absolute arcade-bracket-tr w-5 h-5 bg-yellow-400 border-2 border-black z-20"></div>
+      <div class="absolute arcade-bracket-bl w-5 h-5 bg-yellow-400 border-2 border-black z-20"></div>
+      <div class="absolute arcade-bracket-br w-5 h-5 bg-yellow-400 border-2 border-black z-20"></div>
+
+      <!-- Top Arcade Bezel Header -->
+      <div class="flex items-center justify-between px-3 py-1.5 mb-3 bg-black/70 border-2 border-yellow-500/80 rounded-md">
+        <span class="pixel-font text-[9px] text-amber-400 animate-pulse flex items-center gap-1">
+          <span>★</span> QUEST CLEARED 100% <span>★</span>
+        </span>
+        <span class="pixel-font text-[9px] text-emerald-400">STATUS: REWARD UNLOCKED</span>
+      </div>
+
+      <!-- Parchment Scroll Inner Box -->
+      <div class="quest-scroll-inner rounded-xl p-4 sm:p-6 text-slate-900">
+        
+        <!-- Header Banner with 3D drop-shadow -->
+        <div class="text-center border-b-2 border-amber-900/30 pb-3 mb-4">
+          <div class="inline-flex items-center gap-1.5 bg-amber-900/10 px-3 py-0.5 rounded-full mb-1 border border-amber-800/20">
+            <span class="text-xs text-amber-700 font-bold tracking-widest uppercase font-mono">Special Reward Message</span>
+          </div>
+          <h3 class="pixel-font text-base sm:text-xl font-black text-amber-950 mt-1 tracking-tight drop-shadow-[1px_1px_0_#fff]">
+            Happy Birthday! 🎂❤️
+          </h3>
+        </div>
+
+        <!-- Exact Birthday Message with Elegant Myanmar Typography & Comfortable Spacing -->
+        <div class="text-[13px] sm:text-[15px] space-y-4 font-normal text-amber-950 text-left burmese-font">
+          <p class="indent-4">
+            ဒီနှစ်မွေးနေ့ကစပြီး ပိုပျော်ရွှင်ရပါစေ။ စိတ်ပေါ့ပါးပြီး အရာရာကို အကောင်းမြင်စိတ်နဲ့ ဖြတ်သန်းနိုင်ပါစေ။ စိတ်ပူစရာတွေ၊ အတွေးများစရာတွေ နည်းနိုင်သမျှနည်းပြီး ကိုယ်လိုချင်တဲ့အရာတွေကိုလည်း တစ်ခုပြီးတစ်ခု အကောင်အထည်ဖော်နိုင်ပါစေ။
+          </p>
+          <p class="indent-4">
+            တို့နှစ်ယောက်လုံးလည်း အခုထက်ပိုကောင်းတဲ့အရာတွေကို အတူတူလုပ်ရင်း၊ အတူတူသင်ယူရင်း၊ အတူတူတိုးတက်လာကြမယ်လို့ မျှော်လင့်တယ်။ ပိုကောင်းတဲ့အရာတွေကို ဆက်ပြီးလုပ်နေကြရင် တစ်နေ့မှာ ပိုကောင်းတဲ့အရာတွေကို တကယ်ပိုင်ဆိုင်လာရမှာပါ။
+          </p>
+          <div class="pt-2 border-t border-amber-800/20">
+            <p class="font-sans text-xs sm:text-[13.5px] font-semibold text-slate-800 leading-relaxed italic">
+              "And I believe that if we keep doing better things and growing together, better things will eventually come our way. Wishing you a year full of happiness, growth, new experiences, and beautiful surprises. Enjoy your day and take good care of yourself. ❤️"
+            </p>
+          </div>
+        </div>
+
+        <!-- Bottom Arcade Action Buttons (Chunky Beveled Arcade Controls) -->
+        <div class="mt-6 pt-4 border-t-2 border-amber-800/30 flex flex-col sm:flex-row gap-3 justify-center items-stretch sm:items-center">
+          <button onclick="signOutGame()" class="arcade-push-btn btn-arcade-red px-5 py-3 text-xs">
+            <span>🔒</span> SIGN OUT
+          </button>
+          <button onclick="confettiExplosion()" class="arcade-push-btn btn-arcade-gold px-6 py-3 text-xs">
+            <span>✨</span> CELEBRATE!
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ARCADE BOTTOM BRICK GROUND -->
+  <div class="w-full h-8 pixel-ground mt-2"></div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    /* ================= 8-BIT SOUND SYNTHESIZER ================= */
+    let audioCtx = null;
+    let isMuted = false;
+
+    function initAudio() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+      } catch (e) {}
+    }
+
+    function playSfx(type) {
+      if (isMuted) return;
+      initAudio();
+      if (!audioCtx) return;
+      const now = audioCtx.currentTime;
+
+      try {
+        if (type === 'coin') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(987.77, now);
+          osc.frequency.setValueAtTime(1318.51, now + 0.08);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else if (type === 'jump') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(160, now);
+          osc.frequency.exponentialRampToValueAtTime(480, now + 0.15);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.18);
+        } else if (type === 'win') {
+          const notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+            gain.gain.setValueAtTime(0.1, now + idx * 0.09);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.22);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + idx * 0.09);
+            osc.stop(now + idx * 0.09 + 0.22);
+          });
+        } else if (type === 'blow') {
+          const bufferSize = audioCtx.sampleRate * 0.35;
+          const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+          const noise = audioCtx.createBufferSource();
+          noise.buffer = buffer;
+          const filter = audioCtx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(600, now);
+          filter.frequency.exponentialRampToValueAtTime(80, now + 0.35);
+          const gain = audioCtx.createGain();
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(audioCtx.destination);
+          noise.start(now);
+        } else if (type === 'buzz') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, now);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.2);
+        }
+      } catch (err) {}
+    }
+
+    function toggleMute() {
+      isMuted = !isMuted;
+      document.getElementById('sound-btn').innerText = isMuted ? '🔇 MUTE' : '🔊 SFX';
+      if (!isMuted) playSfx('coin');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('arcadeToast');
+      toast.innerText = message;
+      toast.style.display = 'block';
+      playSfx('buzz');
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2500);
+    }
+
+    /* ================= WELCOME SCREEN HERO SELECT LOGIC ================= */
+    let selectedPlayer = 'boy'; // Boy is strictly selected
+
+    function handleGirlSelect() {
+      showToast("⚠️ YOU MUST CHOOSE BOY (PLAYER 2)! ❤️");
+    }
+
+    function handleBoySelect() {
+      selectedPlayer = 'boy';
+      playSfx('coin');
+    }
+
+    /* ================= SCREEN STAGES & ROUTING ================= */
+    let currentStage = 0;
+
+    function goToStage(stageNum) {
+      currentStage = stageNum;
+      document.getElementById('hud-stage-num').innerText = stageNum;
+      
+      ['screen-welcome', 'screen-stage1', 'screen-stage2', 'screen-meme', 'screen-cake'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+
+      if (stageNum === 0) {
+        document.getElementById('screen-welcome').classList.remove('hidden');
+      } else if (stageNum === 1) {
+        document.getElementById('screen-stage1').classList.remove('hidden');
+        startPlatformerGame();
+      } else if (stageNum === 2) {
+        document.getElementById('screen-stage2').classList.remove('hidden');
+        initMatchGame();
+      } else if (stageNum === 3) {
+        document.getElementById('screen-meme').classList.remove('hidden');
+        playSfx('coin');
+      } else if (stageNum === 4) {
+        document.getElementById('screen-cake').classList.remove('hidden');
+        playSfx('win');
+      }
+    }
+
+    function startQuest() {
+      initAudio();
+      playSfx('coin');
+      goToStage(1);
+    }
+
+    function showMemeStage() {
+      goToStage(3);
+    }
+
+    /* ================= STAGE 1: 2D RETRO PLATFORMER ENGINE ================= */
+    let pCanvas, pCtx;
+    let pLoopId;
+    let pCoinsCollected = 0;
+    let pStageCleared = false;
+
+    // Platformer State & Entities
+    const pKeys = { left: false, right: false, jump: false };
+    const player = {
+      x: 30,
+      y: 130,
+      vx: 0,
+      vy: 0,
+      width: 26,
+      height: 40,
+      isGrounded: false,
+      speed: 3.4,
+      jumpForce: -8.8
+    };
+
+    const girl = {
+      x: 540,
+      y: 130,
+      width: 26,
+      height: 40
+    };
+
+    const WORLD_W = 600;
+    const WORLD_H = 240;
+
+    const platforms = [
+      { x: 0, y: 190, w: 160, h: 50, type: 'ground' },
+      { x: 195, y: 135, w: 75, h: 22, type: 'brick' },
+      { x: 310, y: 150, w: 42, h: 40, type: 'pipe' },
+      { x: 300, y: 190, w: 110, h: 50, type: 'ground' },
+      { x: 450, y: 170, w: 150, h: 70, type: 'ground' }
+    ];
+
+    let pCoins = [
+      { x: 110, y: 155, collected: false },
+      { x: 232, y: 105, collected: false },
+      { x: 331, y: 120, collected: false }
+    ];
+
+    function startPlatformerGame() {
+      pCanvas = document.getElementById('platformerCanvas');
+      pCtx = pCanvas.getContext('2d');
+
+      pCanvas.width = WORLD_W;
+      pCanvas.height = WORLD_H;
+
+      player.x = 25;
+      player.y = 130;
+      player.vx = 0;
+      player.vy = 0;
+      player.isGrounded = false;
+      pCoinsCollected = 0;
+      pStageCleared = false;
+      pCoins.forEach(c => c.collected = false);
+
+      document.getElementById('plat-coins').innerText = '0';
+      document.getElementById('stage1-cleared').classList.add('hidden');
+
+      window.removeEventListener('keydown', handlePlatKeyDown);
+      window.removeEventListener('keyup', handlePlatKeyUp);
+      window.addEventListener('keydown', handlePlatKeyDown);
+      window.addEventListener('keyup', handlePlatKeyUp);
+
+      bindTouchBtn('p-btn-left', 'left');
+      bindTouchBtn('p-btn-right', 'right');
+      bindTouchBtn('p-btn-jump', 'jump');
+
+      cancelAnimationFrame(pLoopId);
+      platformerLoop();
+    }
+
+    function bindTouchBtn(btnId, action) {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.onpointerdown = (e) => {
+        e.preventDefault();
+        pKeys[action] = true;
+        if (action === 'jump' && player.isGrounded) {
+          player.vy = player.jumpForce;
+          player.isGrounded = false;
+          playSfx('jump');
+        }
+      };
+      btn.onpointerup = (e) => {
+        e.preventDefault();
+        pKeys[action] = false;
+      };
+      btn.onpointercancel = () => { pKeys[action] = false; };
+    }
+
+    function handlePlatKeyDown(e) {
+      if (currentStage !== 1) return;
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') pKeys.left = true;
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') pKeys.right = true;
+      if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') && !pKeys.jump) {
+        pKeys.jump = true;
+        if (player.isGrounded) {
+          player.vy = player.jumpForce;
+          player.isGrounded = false;
+          playSfx('jump');
+        }
+      }
+    }
+
+    function handlePlatKeyUp(e) {
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') pKeys.left = false;
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') pKeys.right = false;
+      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') pKeys.jump = false;
+    }
+
+    function platformerLoop() {
+      if (currentStage !== 1) return;
+
+      if (pKeys.left) player.vx = -player.speed;
+      else if (pKeys.right) player.vx = player.speed;
+      else player.vx = 0;
+
+      player.vy += 0.44;
+      if (player.vy > 9) player.vy = 9;
+
+      player.x += player.vx;
+      player.y += player.vy;
+
+      if (player.x < 5) player.x = 5;
+
+      if (player.y > WORLD_H + 40) {
+        player.x = 25;
+        player.y = 120;
+        player.vy = 0;
+      }
+
+      player.isGrounded = false;
+      for (const plat of platforms) {
+        if (
+          player.x + player.width > plat.x &&
+          player.x < plat.x + plat.w &&
+          player.y + player.height >= plat.y &&
+          player.y + player.height <= plat.y + 14 &&
+          player.vy >= 0
+        ) {
+          player.y = plat.y - player.height;
+          player.vy = 0;
+          player.isGrounded = true;
+        }
+      }
+
+      pCoins.forEach((c) => {
+        if (!c.collected && Math.hypot((player.x + 12) - c.x, (player.y + 16) - c.y) < 22) {
+          c.collected = true;
+          pCoinsCollected++;
+          document.getElementById('plat-coins').innerText = pCoinsCollected;
+          playSfx('coin');
+        }
+      });
+
+      if (
+        !pStageCleared &&
+        player.x + player.width >= girl.x - 6 &&
+        Math.abs(player.y - girl.y) < 30
+      ) {
+        pStageCleared = true;
+        playSfx('win');
+        document.getElementById('stage1-cleared').classList.remove('hidden');
+        confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
+      }
+
+      // Render World
+      pCtx.fillStyle = '#60a5fa';
+      pCtx.fillRect(0, 0, WORLD_W, WORLD_H);
+
+      pCtx.fillStyle = '#ffffff';
+      drawPixelCloud(pCtx, 50, 30);
+      drawPixelCloud(pCtx, 460, 45);
+
+      platforms.forEach(plat => {
+        if (plat.type === 'ground') {
+          pCtx.fillStyle = '#22c55e';
+          pCtx.fillRect(plat.x, plat.y, plat.w, 8);
+          pCtx.fillStyle = '#78350f';
+          pCtx.fillRect(plat.x, plat.y + 8, plat.w, plat.h - 8);
+          pCtx.fillStyle = '#16a34a';
+          for (let gx = plat.x; gx < plat.x + plat.w; gx += 8) {
+            pCtx.fillRect(gx, plat.y + 6, 4, 4);
+          }
+        } else if (plat.type === 'brick') {
+          pCtx.fillStyle = '#b45309';
+          pCtx.fillRect(plat.x, plat.y, plat.w, plat.h);
+          pCtx.fillStyle = '#78350f';
+          pCtx.strokeRect(plat.x, plat.y, plat.w, plat.h);
+          pCtx.fillRect(plat.x + plat.w / 2, plat.y, 2, plat.h);
+        } else if (plat.type === 'pipe') {
+          pCtx.fillStyle = '#15803d';
+          pCtx.fillRect(plat.x - 3, plat.y, plat.w + 6, 10);
+          pCtx.fillStyle = '#22c55e';
+          pCtx.fillRect(plat.x - 1, plat.y + 2, 8, 6);
+          pCtx.fillStyle = '#16a34a';
+          pCtx.fillRect(plat.x, plat.y + 10, plat.w, plat.h - 10);
+        }
+      });
+
+      pCoins.forEach(c => {
+        if (!c.collected) {
+          pCtx.fillStyle = '#facc15';
+          pCtx.beginPath();
+          pCtx.arc(c.x, c.y, 7, 0, Math.PI * 2);
+          pCtx.fill();
+          pCtx.fillStyle = '#ca8a04';
+          pCtx.stroke();
+          pCtx.fillStyle = '#ffffff';
+          pCtx.fillRect(c.x - 2, c.y - 3, 3, 6);
+        }
+      });
+
+      drawGirlSprite(pCtx, girl.x, girl.y);
+      drawBoySprite(pCtx, player.x, player.y, player.vx);
+
+      if (!pStageCleared) {
+        pLoopId = requestAnimationFrame(platformerLoop);
+      }
+    }
+
+    function drawPixelCloud(ctx, x, y) {
+      ctx.fillRect(x, y + 8, 48, 14);
+      ctx.fillRect(x + 8, y + 2, 28, 8);
+      ctx.fillRect(x + 14, y - 2, 16, 6);
+    }
+
+    function drawBoySprite(ctx, x, y, vx) {
+      ctx.save();
+      ctx.fillStyle = '#ffedd5';
+      ctx.fillRect(x + 4, y + 6, 16, 12);
+      ctx.fillStyle = '#09090b';
+      ctx.fillRect(x + 2, y, 20, 8);
+      ctx.fillRect(x + 1, y - 2, 6, 4);
+      ctx.fillRect(x + 8, y - 3, 8, 4);
+      ctx.fillRect(x + 16, y - 2, 6, 4);
+      ctx.fillRect(x + 1, y + 4, 4, 4);
+      ctx.fillRect(x + 19, y + 4, 4, 4);
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(x + 6, y + 9, 5, 4);
+      ctx.fillRect(x + 13, y + 9, 5, 4);
+      ctx.fillRect(x + 10, y + 10, 4, 2);
+      ctx.fillStyle = '#b91c1c';
+      ctx.fillRect(x + 10, y + 15, 4, 1.5);
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(x + 4, y + 18, 16, 9);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(x + 5, y + 27, 6, 5);
+      ctx.fillRect(x + 13, y + 27, 6, 5);
+      ctx.restore();
+    }
+
+    function drawGirlSprite(ctx, x, y) {
+      ctx.save();
+      ctx.fillStyle = '#f43f5e';
+      ctx.fillRect(x - 2, y + 2, 4, 4);
+      ctx.fillStyle = '#18181b';
+      ctx.fillRect(x - 5, y + 5, 4, 10);
+      ctx.fillRect(x - 4, y + 14, 3, 8);
+
+      ctx.fillStyle = '#18181b';
+      ctx.fillRect(x + 3, y + 1, 18, 7);
+      ctx.fillRect(x + 2, y + 4, 4, 12);
+      ctx.fillRect(x + 18, y + 4, 4, 12);
+
+      ctx.fillStyle = '#ffedd5';
+      ctx.fillRect(x + 5, y + 7, 14, 11);
+
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(x + 6, y + 10, 4, 4);
+      ctx.fillRect(x + 14, y + 10, 4, 4);
+      ctx.fillRect(x + 10, y + 11, 4, 1.5);
+      ctx.fillRect(x + 5, y + 9, 2, 1);
+      ctx.fillRect(x + 17, y + 9, 2, 1);
+
+      ctx.fillStyle = '#fb7185';
+      ctx.fillRect(x + 4, y + 14, 3, 2);
+      ctx.fillRect(x + 17, y + 14, 3, 2);
+
+      ctx.fillStyle = '#e11d48';
+      ctx.fillRect(x + 10, y + 15, 4, 1.5);
+
+      ctx.fillStyle = '#1d4ed8';
+      ctx.fillRect(x + 3, y + 18, 18, 10);
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(x + 8, y + 18, 8, 10);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(x + 8, y + 21, 8, 2);
+      ctx.fillRect(x + 8, y + 25, 8, 2);
+
+      ctx.fillStyle = '#ec4899';
+      ctx.fillRect(x + 19, y + 17, 4, 6);
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(x + 20, y + 19, 2, 2);
+
+      ctx.fillStyle = '#2563eb';
+      ctx.fillRect(x + 5, y + 28, 5, 3);
+      ctx.fillRect(x + 14, y + 28, 5, 3);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(x + 5, y + 31, 5, 2);
+      ctx.fillRect(x + 14, y + 31, 5, 2);
+
+      const heartPulse = Math.sin(Date.now() / 250) * 2;
+      ctx.font = '16px sans-serif';
+      ctx.fillText('❤️', x + 4, y - 6 + heartPulse);
+      ctx.restore();
+    }
+
+    /* ================= STAGE 2: MEMORY MATCH (USING THE COUPLE PHOTOS) ================= */
+    const COUPLE_PHOTOS = [
+      { id: 'photo1', src: '1.jpg', label: 'Arcade Night' },
+      { id: 'photo2', src: '2.jpg', label: 'Retro Room' },
+      { id: 'photo3', src: '3.jpg', label: 'Arcade Mirror' },
+      { id: 'photo4', src: '4.jpg', label: 'Together' }
+    ];
+
+    let cardsData = [];
+    let flippedCards = [];
+    let matchedPairsCount = 0;
+    let canFlip = true;
+
+    function initMatchGame() {
+      const grid = document.getElementById('cards-grid');
+      grid.innerHTML = '';
+      flippedCards = [];
+      matchedPairsCount = 0;
+      canFlip = true;
+      document.getElementById('match-pairs-count').innerText = '0';
+      document.getElementById('stage2-cleared').classList.add('hidden');
+
+      cardsData = [...COUPLE_PHOTOS, ...COUPLE_PHOTOS]
+        .map((item, index) => ({ ...item, uid: index }))
+        .sort(() => Math.random() - 0.5);
+
+      cardsData.forEach((card, index) => {
+        const cardEl = document.createElement('div');
+        cardEl.className = 'perspective-800 w-full h-full cursor-pointer';
+        cardEl.innerHTML = `
+          <div id="card-flipper-${index}" class="card-flipper">
+            <div class="card-front arcade-box bg-indigo-900 border-2 border-yellow-400 flex flex-col items-center justify-center p-1 shadow-md">
+              <span class="pixel-font text-sm sm:text-base text-yellow-300">★</span>
+              <span class="pixel-font text-[8px] text-pink-300 mt-0.5">8-BIT</span>
+            </div>
+            <div class="card-back arcade-box border-2 border-pink-400 overflow-hidden bg-black flex items-center justify-center">
+              <img src="${card.src}" alt="${card.label}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/200x200/1e1b4b/facc15?text=${card.label}';"/>
+            </div>
+          </div>
+        `;
+        cardEl.addEventListener('click', () => handleCardClick(index));
+        grid.appendChild(cardEl);
+      });
+    }
+
+    function handleCardClick(index) {
+      if (!canFlip) return;
+      const flipper = document.getElementById(`card-flipper-${index}`);
+      if (flipper.classList.contains('flipped')) return;
+
+      playSfx('coin');
+      flipper.classList.add('flipped');
+      flippedCards.push({ index, data: cardsData[index] });
+
+      if (flippedCards.length === 2) {
+        canFlip = false;
+        const [c1, c2] = flippedCards;
+
+        if (c1.data.id === c2.data.id) {
+          matchedPairsCount++;
+          document.getElementById('match-pairs-count').innerText = matchedPairsCount;
+          playSfx('win');
+          flippedCards = [];
+          canFlip = true;
+
+          if (matchedPairsCount === COUPLE_PHOTOS.length) {
+            document.getElementById('stage2-cleared').classList.remove('hidden');
+            confetti({ particleCount: 70, spread: 80, origin: { y: 0.6 } });
+          }
+        } else {
+          setTimeout(() => {
+            document.getElementById(`card-flipper-${c1.index}`).classList.remove('flipped');
+            document.getElementById(`card-flipper-${c2.index}`).classList.remove('flipped');
+            flippedCards = [];
+            canFlip = true;
+          }, 800);
+        }
+      }
+    }
+
+    /* ================= CAKE BLOWING & LETTER ================= */
+    let candleBlown = false;
+
+    function blowCandles() {
+      if (candleBlown) return;
+      candleBlown = true;
+      playSfx('blow');
+
+      document.getElementById('candle-flames').classList.add('hidden');
+      document.getElementById('blow-hint').classList.add('hidden');
+
+      confettiExplosion();
+
+      setTimeout(() => {
+        playSfx('win');
+        document.getElementById('letter-unlock-box').classList.remove('hidden');
+      }, 600);
+    }
+
+    function confettiExplosion() {
+      confetti({
+        particleCount: 120,
+        spread: 90,
+        origin: { y: 0.6 },
+        colors: ['#f43f5e', '#fbbf24', '#38bdf8', '#a855f7', '#4ade80']
+      });
+    }
+
+    function openLetter() {
+      playSfx('coin');
+      document.getElementById('letter-modal').classList.remove('hidden');
+    }
+
+    /* ================= SIGN OUT / RESET GAME ================= */
+    function signOutGame() {
+      playSfx('coin');
+      document.getElementById('letter-modal').classList.add('hidden');
+      candleBlown = false;
+      document.getElementById('candle-flames').classList.remove('hidden');
+      document.getElementById('blow-hint').classList.remove('hidden');
+      document.getElementById('letter-unlock-box').classList.add('hidden');
+      goToStage(0);
+    }
+  </script>
+</body>
+</html>
